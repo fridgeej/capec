@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Каталог</title>
+  <!-- Подключение шрифта Barlow -->
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <style>
+    /* Общие стили */
+    body { 
+      font-family: 'Barlow', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #191919;
+      color: white;
+    }
+  
+    /* Фиксированный заголовок */
+    header.top-header {
+      width: 100%;
+      background-color: #605E5D;
+      border-bottom: 1px solid #FF4D01;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px 10px;
+      height: 40px;
+      position: fixed;
+      top: 0;
+      z-index: 1050;
+    }
+    header.top-header nav.top-nav {
+      display: flex;
+      gap: 15px;
+    }
+    header.top-header nav.top-nav a {
+      color: white;
+      text-decoration: none;
+      font-size: 1rem;
+    }
+    
+    /* Бургер-иконка */
+    .burger-container {
+      cursor: pointer;
+      display: block;
+    }
+    .burger-icon {
+      display: inline-block;
+      width: 30px;
+      height: 22px;
+      position: relative;
+      transition: transform 0.3s ease;
+    }
+    .burger-icon span {
+      position: absolute;
+      height: 4px;
+      width: 100%;
+      background: #fff;
+      left: 0;
+      transition: all 0.3s ease;
+    }
+    .burger-icon span:nth-child(1) { top: 0; }
+    .burger-icon span:nth-child(2) { top: 9px; }
+    .burger-icon span:nth-child(3) { top: 18px; }
+    .burger-icon.active {
+      transform: rotate(90deg);
+    }
+    
+    /* Адаптивное бургер-меню (с якорными ссылками для плавного скролла) */
+    nav.burger-menu {
+      position: fixed;
+      top: 0;
+      left: -300px;
+      width: 300px;
+      height: 100%;
+      background-color: #333;
+      transition: left 0.3s ease;
+      z-index: 1060;
+      padding-top: 60px;
+    }
+    nav.burger-menu.active {
+      left: 0;
+    }
+    nav.burger-menu ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      text-align: center;
+    }
+    nav.burger-menu ul li {
+      margin: 20px 0;
+    }
+    nav.burger-menu ul li a {
+      color: white;
+      text-decoration: none;
+      font-size: 1.2rem;
+    }
+    
+    /* Затемняющий оверлей */
+    .menu-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      z-index: 1055;
+    }
+    .menu-overlay.active {
+      display: block;
+    }
+  
+    /* Запрет прокрутки при открытом меню */
+    body.menu-open {
+      overflow: hidden;
+    }
+    
+    /* Секция слайдера (Галерея) */
+    #slider {
+      position: relative;
+      margin: 20px auto;
+      max-width: 800px;
+      overflow: hidden;
+      border-radius: 8px;
+    }
+    .slider-container {
+      display: flex;
+      transition: transform 0.5s ease-in-out;
+    }
+    .slider-container .slide {
+      min-width: 100%;
+      box-sizing: border-box;
+    }
+    .slider-container .slide img {
+      width: 100%;
+      display: block;
+      height: 300px;
+      object-fit: cover;
+    }
+    .slider-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.5);
+      color: white;
+      border: none;
+      font-size: 2rem;
+      padding: 5px 10px;
+      cursor: pointer;
+      z-index: 10;
+    }
+    .slider-btn.prev {
+      left: 10px;
+    }
+    .slider-btn.next {
+      right: 10px;
+    }
+  
+    /* Секция интерактивной медиагалереи */
+    #mediaGallery {
+      margin: 40px auto;
+      width: 600px;
+      height: 400px;
+      text-align: center;
+      border: 2px solid #FF4D01;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .gallery-container {
+      width: 100%;
+      height: 250px;
+      overflow: hidden;
+      margin: 0 auto;
+      position: relative;
+    }
+    #galleryImg {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+    }
+    #galleryImg.active {
+      opacity: 1;
+    }
+    #galleryVideo {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: none;
+    }
+    .btn {
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 20px;
+      margin: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    
+    /* Секция для карты */
+    #mapSection {
+      margin: 40px auto;
+      max-width: 800px;
+      padding: 0 20px;
+    }
+    #mapSection h2 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    
+    /* Разное оформление основного контента */
+    main {
+      padding: 20px;
+      margin-top: 40px; /* отступ равен высоте заголовка */
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    /* Блок управления (поиск, фильтры) */
+    .controls {
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-evenly;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .controls input[type="text"],
+    .controls select,
+    .controls input[type="number"] {
+      flex: 1 1 150px;
+      margin: 10px;
+      padding: 8px;
+      font-size: 16px;
+      border: 1px solid #605E5D;
+      border-radius: 4px;
+      background-color: white;
+      color: #191919;
+    }
+    
+    /* Сетка каталога (контейнер для карточек товаров) */
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+    }
+    .card {
+      border: 1px solid #FF4D01;
+      border-radius: 8px;
+      padding: 10px;
+      width: 200px;
+      text-align: center;
+      background-color: #605E5D;
+      color: white;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 4px 8px rgba(255, 77, 1, 0.5);
+    }
+    .card img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+    
+    /* Пагинация */
+    #pagination {
+      text-align: center;
+      margin-top: 20px;
+    }
+    #pagination button {
+      margin: 2px;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      background-color: #605E5D;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    #pagination button:hover {
+      background-color: #FF4D01;
+    }
+    
+    /* Уведомления */
+    .notification {
+      min-width: 250px;
+      margin-bottom: 10px;
+      padding: 15px;
+      border-radius: 4px;
+      color: #fff;
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: opacity 0.5s, transform 0.5s;
+    }
+    .notification-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 2000;
+    }
+    .notification.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .notification.success {
+      background-color: #4c99af;
+    }
+    .notification.error {
+      background-color: #f44336;
+    }
+    .notification.info {
+      background-color: #9821f3;
+    }
+    
+    /* Адаптивные стили */
+    @media (max-width: 768px) {
+      .card { width: 45%; }
+    }
+    @media (max-width: 320px) {
+      .card { width: 100%; }
+      header.top-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      header.top-header nav {
+        margin-top: 5px;
+      }
+    }
+    
+    /* Секция "О нас" */
+    #about {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: #333;
+      border-radius: 8px;
+    }
+    #about h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    #about p {
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+    
+    /* Эффект при наведении на секции */
+    section {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    section:hover {
+      transform: scale(1.02);
+      box-shadow: 0 6px 15px rgba(255, 77, 1, 0.8);
+    }
+    
+    /* -------------------------------
+       Эффект изменения цвета текста по секциям.
+       По умолчанию текст секций белый.
+       Когда секция становится в зоне видимости (threshold 0.5),
+       к ней добавляется класс .scrolled, и весь текст в секции плавно меняет цвет на #FF4D01.
+    ------------------------------- */
+    section, section * {
+      transition: color 1s ease;
+      color: white;
+    }
+    section.scrolled, section.scrolled * {
+      color: #FF4D01 !important;
+    }
+    
+    /* -------------------------------
+       Parallax Section Styles
+       Parallax-эффект для секции с разделением контента на слои:
+         - .bg-layer: фоновый слой (самое медленное движение)
+         - .mid-layer: средний слой (умеренная скорость)
+         - .front-layer: передний слой (наибольшая скорость)
+         - .parallax-element: элемент, который может двигаться в обратном направлении для усиления эффекта глубины
+         - .parallax-content: контейнер для основного контента секции
+    ------------------------------- */
+    .parallax-section {
+      position: relative;
+      height: 400px;
+      overflow: hidden;
+      margin: 40px auto;
+    }
+    .parallax-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+    }
+    .bg-layer {
+      background-image: url('images/parallax-bg.jpg');
+      z-index: 1;
+    }
+    .mid-layer {
+      background-image: url('images/parallax-mid.png');
+      z-index: 2;
+      opacity: 0.8;
+    }
+    .front-layer {
+      background: rgba(255, 77, 1, 0.3);
+      z-index: 3;
+    }
+    .parallax-element {
+      position: absolute;
+      z-index: 4;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 24px;
+      padding: 10px 20px;
+      background-color: rgba(0, 0, 0, 0.5);
+      color: white;
+      border-radius: 5px;
+    }
+    .parallax-content {
+      position: relative;
+      z-index: 5;
+      text-align: center;
+      color: white;
+      padding: 20px;
+    }
+    
+  </style>
+</head>
+<body>
+  <!-- Фиксированный заголовок -->
+  <header class="top-header">
+    <div id="userProfile" style="display: flex; align-items: center; gap: 5px;">
+      <!-- Данные пользователя подставляются скриптом -->
+    </div>
+    <!-- Основное навигационное меню -->
+    <nav class="top-nav">
+      <a href="#slider">Галерея</a>
+      <a href="#catalog">Каталог</a>
+      <a href="#mapSection">Карта</a>
+      <a href="#about">О нас</a>
+    </nav>
+    <!-- Бургер-иконка -->
+    <div class="burger-container">
+      <div class="burger-icon" id="burgerIcon">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </header>
+  
+  <!-- Адаптивное бургер-меню -->
+  <nav class="burger-menu" id="burgerMenu">
+    <ul>
+      <li><a href="#slider">Галерея</a></li>
+      <li><a href="#catalog">Каталог</a></li>
+      <li><a href="#mapSection">Карта</a></li>
+      <li><a href="#about">О нас</a></li>
+      <li><a href="favourites.html">Избранное</a></li>
+      <li><a href="cart.html">Корзина</a></li>
+      <li><a href="review.html">Отзывы</a></li>
+    </ul>
+  </nav>
+  
+  <!-- Затемняющий оверлей -->
+  <div id="menuOverlay" class="menu-overlay"></div>
+  
+  <main>
+    <!-- Секция слайдера (Галерея) -->
+    <section id="slider">
+      <div class="slider-container">
+        <!-- Слайды будут динамически генерироваться -->
+      </div>
+      <button class="slider-btn prev">❮</button>
+      <button class="slider-btn next">❯</button>
+    </section>
+    
+    <!-- Секция интерактивной медиагалереи -->
+    <section id="mediaGallery">
+      <div class="gallery-container">
+        <!-- Элемент для изображения -->
+        <img id="galleryImg" src="images/default.jpg" alt="Gallery image" class="gallery-image active">
+        <!-- Элемент для видео -->
+        <video id="galleryVideo" controls></video>
+      </div>
+      <div class="controls" style="margin-top: 10px;">
+        <button id="element1" class="btn">❮</button>
+        <button id="element2" class="btn">❯</button>
+        <button id="pauseBtn" class="btn">Пауза</button>
+        <div id="playerStatus" style="margin-top: 10px;">Пауза</div>
+        <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="0.5" style="margin-top: 10px;">
+      </div>
+    </section>
+    
+    <!-- Parallax Section -->
+    <section id="parallaxSection" class="parallax-section">
+      <div class="parallax-layer bg-layer"></div>
+      <div class="parallax-layer mid-layer"></div>
+      <div class="parallax-layer front-layer"></div>
+      <div class="parallax-element">Качество в каждом шаге</div>
+      <div class="parallax-content">
+        <h2>Откройте для себя мир профессиональных услуг!</h2>
+        <p>
+          Наш каталог объединяет всё – от сантехнических работ и электромонтажа до 
+          ремонта крыши, установки окон и ландшафтного дизайна. Мы отбираем только 
+          лучшие решения для вашего дома и офиса, гарантируя качество, надежность и 
+          доступные цены.
+        </p>
+      </div>
+
+    </section>
+    
+    <!-- Заголовок каталога -->
+    <h1 id="catalogHeading">Каталог</h1>
+  
+    <!-- Блок управления: поиск и фильтры -->
+    <div class="controls">
+      <input type="text" id="search" placeholder="Поиск...">
+      <select id="sort">
+        <option value="">Сортировка</option>
+        <option value="price">По цене</option>
+        <option value="title">По названию</option>
+      </select>
+      <select id="category">
+        <option value="">Все категории</option>
+      </select>
+      <input type="number" id="minPrice" placeholder="Мин. цена">
+      <input type="number" id="maxPrice" placeholder="Макс. цена">
+    </div>
+    
+    <!-- Сетка каталога (контейнер для карточек товаров) -->
+    <div class="grid" id="catalog"></div>
+    
+    <!-- Пагинация -->
+    <div id="pagination"></div>
+    
+    <!-- Секция с картой -->
+    <section id="mapSection">
+      <h2>Наш адрес в Минске</h2>
+      <div id="map" style="width: 100%; height: 400px;"></div>
+    </section>
+    
+    <!-- Секция "О нас" -->
+    <section id="about">
+      <h2>О нас</h2>
+      <p><strong>Наш адрес:</strong> г. Минск, ул. Красноармейская, д. 28, офис 101</p>
+      <p><strong>Телефон:</strong> +375 (44) 567-51-31</p>
+      <p><strong>Email:</strong> fffffffwh@gmail.com</p>
+      <p><strong>Режим работы:</strong> Понедельник – Пятница, 09:00 – 17:00</p>
+      <p>Мы — компания с многолетним опытом работы в сфере торговли, приверженная высоким стандартам качества и первоклассному обслуживанию. Мы также активно участвуем в социальных и благотворительных проектах, поддерживая местное сообщество.</p>
+    </section>
+  </main>
+  
+  <!-- Подключаемые скрипты -->
+  <script src="catalog.js" defer></script>
+  <script src="notification.js" defer></script>
+  <!-- Подключение Яндекс.Карт API -->
+  <script src="https://api-maps.yandex.ru/2.1/?apikey=ВАШ_ЯНДЕКС_API_KEY&lang=ru_RU" type="text/javascript"></script>
+  
+  <!-- Скрипт для плавной прокрутки внутренних якорей -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+          e.preventDefault();
+          const targetElement = document.querySelector(this.getAttribute('href'));
+          if (targetElement) {
+            targetElement.scrollIntoView({ behavior: 'smooth' });
+          }
+          // Закрываем бургер-меню при клике
+          document.getElementById('burgerMenu').classList.remove('active');
+          document.getElementById('menuOverlay').classList.remove('active');
+          document.body.classList.remove('menu-open');
+        });
+      });
+    });
+  </script>
+  
+  <!-- Скрипт инициализации Яндекс.Карт -->
+  <script>
+    ymaps.ready(initYandexMap);
+    function initYandexMap() {
+      var myMap = new ymaps.Map("map", {
+        center: [53.9, 27.5667],
+        zoom: 14
+      });
+      var myPlacemark = new ymaps.Placemark([53.9, 27.5667], {
+        hintContent: 'г. Минск, ул. Красноармейская, д. 28, офис 101',
+        balloonContent: 'г. Минск, ул. Красноармейская, д. 28, офис 101'
+      }, {
+        preset: 'islands#icon',
+        iconColor: '#0095b6'
+      });
+      myMap.geoObjects.add(myPlacemark);
+    }
+  </script>
+  
+  <!-- Скрипт изменения цвета текста по секциям -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Отслеживаем все элементы <section> для эффекта изменения цвета текста
+      const sections = document.querySelectorAll("section");
+      const colorObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.intersectionRatio >= 0.5) {
+            entry.target.classList.add('scrolled');
+          } else {
+            entry.target.classList.remove('scrolled');
+          }
+        });
+      }, { threshold: 0.5 });
+      
+      sections.forEach(section => {
+        colorObserver.observe(section);
+      });
+    });
+  </script>
+  
+  <!-- Скрипт для parallax-эффекта в секции parallaxSection -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var parallaxSection = document.getElementById("parallaxSection");
+      if (!parallaxSection) return;
+      var bgLayer = parallaxSection.querySelector('.bg-layer');
+      var midLayer = parallaxSection.querySelector('.mid-layer');
+      var frontLayer = parallaxSection.querySelector('.front-layer');
+      var reverseElement = parallaxSection.querySelector('.parallax-element');
+      
+      window.addEventListener('scroll', function() {
+        var rect = parallaxSection.getBoundingClientRect();
+        // Если секция видна, применяем эффекты параллакса
+        if (rect.top <= window.innerHeight && rect.bottom >= 0) {
+          var scrollPos = window.pageYOffset || document.documentElement.scrollTop;
+          var offset = scrollPos - parallaxSection.offsetTop;
+          bgLayer.style.transform = 'translateY(' + (offset * 0.2) + 'px)';
+          midLayer.style.transform = 'translateY(' + (offset * 0.4) + 'px)';
+          frontLayer.style.transform = 'translateY(' + (offset * 0.6) + 'px)';
+          // Элемент с движением в обратном направлении
+          reverseElement.style.transform = 'translate(-50%, -50%) translateY(' + (-offset * 0.4) + 'px)';
+        }
+      });
+    });
+  </script>
+</body>
+</html>
